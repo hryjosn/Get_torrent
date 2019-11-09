@@ -1,38 +1,38 @@
-const request = require("request");
+const rp = require("request-promise");
 const cheerio = require("cheerio");
-let host_name = '';
-let first_url = ''
-let second_url = ''
-let download_url = ''
+import downloadFile from "./Util/downloadFile";
 
-const func = () => {
-  request({
-    url: 'http://javtorrent.re/censored/179097/',
-    method: "GET"
-  }, (error, response, body) => {
-    first_url = get_url(body, '#content > div.single-t.sHD > a')
-    host_name = first_url.split('/')[2]
-    request({
-      url: 'http:'+ first_url,
-      method: "GET"
-    }, (error, response, body) => {
-      second_url = get_url(body, 'body > div.main > a');
-      request({
-        url: 'http://' + host_name + second_url,
-        method: "GET"
-      }, (error, response, body) => {
-        download_url = get_url(body, 'body > div.main > a');
-        console.log('download_url', download_url);
+let page = 1;
 
-      })
-    })
+let execute = () => {
+  console.log(`Page ${page}`)
+  rp({
+    method: 'GET',
+    url: `http://javtorrent.re/page/${page}/`,
+    transform: body => {
+      return cheerio.load(body);
+    }
+  }).then(async ($) => {
+    if ($(`#content > div.base > div`).length !== 50) {
+      return
+    }
+    for (let i = 1; i <= 50; i++) {
+      const a_tag = $(`#content > div.base > div:nth-child(${i}) > a:first-child`);
+      const page_url = 'http://javtorrent.re' + a_tag.attr('href');
+      const name = a_tag.find('span.base-t').text();
+      const downloadUrl = await downloadFile(page_url);
+      console.log('page_url', page_url);
+      console.log('name', name);
+      console.log('downloadUrl', downloadUrl)
+    }
 
-  })
-
+    page++;
+    execute();
+  }).catch(error => {
+    console.log(error)
+  });
 }
-const get_url = (body, rule) => {
-  const $ = cheerio.load(body); // 載入 body
-  const div = $(rule);
-  return div[0].attribs.href
-}
-func();
+execute();
+//jtl.re/x/19/h191108045041.jpg
+//jtl.re/x/19/h191108045041_s.jpg
+
