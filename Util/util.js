@@ -7,6 +7,7 @@ const info_rule = '#content > div.t-info > a'
 let tagList = [];
 let time = '';
 let type = '';
+let large_pic = '';
 const getRes = url => {
   return rp({
     url: url,
@@ -22,10 +23,14 @@ const getFirstLink = async url => {
   time = ''
   let $ = await getRes(url)
   const infoList = $(`${info_rule}`);
+  large_pic = 'http:' + $('#content > img').attr('src')
   time = infoList.eq(0).text();
   type = infoList.eq(1).text();
   for (let i = 2; i <= infoList.length; i++) {
-    tagList.push(infoList.eq(i).text())
+    const tag = infoList.eq(i).text();
+    if (!!tag && tag !== 'New') {
+      tagList.push(tag)
+    }
   }
   let promiseList = [];
   for (const type of verifyType($)) {
@@ -52,7 +57,7 @@ const getSecondLink = url =>
 
 export const getInfo = async url => {
   await getFirstLink(url)
-  return { downloadUrlList, time, tagList, type };
+  return { downloadUrlList, time, tagList, type, large_pic };
 }
 const verifyType = $ => {
   let result = [];
