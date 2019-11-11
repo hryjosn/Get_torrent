@@ -1,6 +1,6 @@
 const rp = require("request-promise");
 const cheerio = require("cheerio");
-import downloadFile from "./Util/downloadFile";
+import { getInfo } from "./Util/util";
 
 let page = 1;
 
@@ -20,10 +20,13 @@ let execute = () => {
       const a_tag = $(`#content > div.base > div:nth-child(${i}) > a:first-child`);
       const page_url = 'http://javtorrent.re' + a_tag.attr('href');
       const name = a_tag.find('span.base-t').text();
-      const downloadUrl = await downloadFile(page_url);
+      const { downloadUrlList, time, tagList, type } = await getInfo(page_url);
       console.log('page_url', page_url);
       console.log('name', name);
-      console.log('downloadUrl', downloadUrl)
+      console.log('downloadUrlList', downloadUrlList)
+      console.log('time', time)
+      console.log('tagList', tagList)
+      console.log('type', type)
     }
 
     page++;
