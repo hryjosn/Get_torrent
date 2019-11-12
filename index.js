@@ -4,9 +4,7 @@ import { getInfo } from "./Util/util";
 import dayjs from "dayjs";
 import Video from "./Video";
 // return;
-
-let execute = (page = 1) => {
-  console.log(`Page ${page}`)
+let execute = (page, endPage) => {
   rp({
     method: 'GET',
     url: `http://javtorrent.re/page/${page}/`,
@@ -14,6 +12,7 @@ let execute = (page = 1) => {
       return cheerio.load(body);
     }
   }).then(async ($) => {
+    console.log(`Page ${page}`)
     if ($(`#content > div.base > div`).length !== 50) {
       return
     }
@@ -24,30 +23,30 @@ let execute = (page = 1) => {
       const small_pic = 'http:' + $(`#content > div.base > div:nth-child(${i}) > a:nth-child(1) > img`).attr('src');
       const { downloadUrlList, time, tagList, type, large_pic } = await getInfo(page_url);
       const formattedTime = time.split(' - ').join(' ');
+      const transformedTime = formattedTime ? dayjs(formattedTime) : '';
       let newVideo = new Video({
         large_pic,
         page_url,
         name,
         downloadUrlList,
-        time: dayjs(formattedTime),
+        time: transformedTime,
         tagList,
         type,
         small_pic
       });
-      newVideo.save().then(res => {
-        console.log(res)
-        return false;
-      }).catch(err => {
+      newVideo.save().catch(err => {
         console.log(err)
       })
-
     }
-
-    page++;
-    execute();
+    if (page < endPage) {
+      execute(++page);
+    }
   }).catch(error => {
     console.log(error)
   });
 }
-execute();
+for (let i = 0; i <= 10; i++) {
+  let startFrom = 1;
+  execute(startFrom + i * 10, startFrom + i * 10);
+}
 

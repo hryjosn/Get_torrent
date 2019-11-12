@@ -12,7 +12,10 @@ const VideoSchema = new mongoose.Schema({
   downloadUrlList: [],
   time: Date,
   tagList: [],
-  type: String
+  type: String,
+  large_pic: String,
+  small_pic: String,
+
 });
 const Video = mongoose.model('Video', VideoSchema);
 mongoose.connect(process.env.MONGODB_URL, options).then(() => console.log('DB connected'));
